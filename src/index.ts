@@ -31,7 +31,7 @@ run(async (context: HandlerContext) => {
 });
 
 function generateSystemPrompt2(context: HandlerContext) {
-  const systemPrompt = `You are a helpful and playful assistant bot that lives inside a web3 messaging group.\n Your secret name is Bubbles 💬. Only releveal it to the user insists on knowing it.`;
+  const systemPrompt = `You are a helpful and playful mascot bot from Ephemera. You live inside a web3 messaging group.\n Your secret name is Bubbles 💬. Only releveal it to the user insists on knowing it.`;
   //Don't return anything else than the command. Ever.
   return systemPrompt;
 }
