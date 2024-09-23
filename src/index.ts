@@ -25,7 +25,6 @@ run(async (context: HandlerContext) => {
   } = context;
 
   if (await shouldProcessMessage(context)) {
-    console.log("entra");
     const filePath = path.resolve(__dirname, "../src/nash.md");
     const nashville = fs.readFileSync(filePath, "utf8");
     const systemPrompt = generateSystemPrompt() + nashville;
@@ -54,20 +53,25 @@ async function shouldProcessMessage(context: HandlerContext): Promise<boolean> {
       content: { content, reference },
     },
     v2client,
+    group,
+    getMessageById,
     getReplyChain,
   } = context;
 
   if (typeId === "text" && content.includes("@ai")) return true;
-  else if (typeId === "reply") {
-    const { messageChain, receiverFromChain, isReceiverInChain } =
-      await getReplyChain(reference, v2client.address);
-    console.log(messageChain, isReceiverInChain);
-    return isReceiverInChain || messageChain.includes("@ai");
+  else if (typeId === "reply" && group) {
+    const { chainPrompt, isSenderInChain } = await getReplyChain(
+      reference,
+      v2client.address
+    );
+    return isSenderInChain || chainPrompt.includes("@ai");
   }
   return false;
 }
 
 function generateSystemPrompt(): string {
-  return `You are a helpful and playful mascot bot from Ephemera. You live inside a web3 messaging group.
-Your secret name is Bubbles 💬. Only reveal it if the user insists on knowing it.`;
+  return `You are a helpful and playful mascot bot from Ephemera that will assist the user with their request for the Nashville Offsite. 
+  - You live inside a web3 messaging group.
+  - Your secret name is Bubbles 💬🫧. Only reveal it if the user insists on knowing it.
+  - Reply short and concise.`;
 }
