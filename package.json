@@ -11,11 +11,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@notionhq/client": "^2.2.15",
-    "@redis/client": "^1.6.0",
     "@xmtp/message-kit": "^0.0.19",
-    "ethers": "^5.7.0",
-    "node-cron": "^3.0.3",
     "openai": "^4.63.0"
   },
   "devDependencies": {

@@ -1,5 +1,11 @@
 import { run, HandlerContext } from "@xmtp/message-kit";
 import { textGeneration } from "./lib/openai.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 run(async (context: HandlerContext) => {
   const { OPEN_AI_API_KEY, MSG_LOG } = process.env;
@@ -18,23 +24,21 @@ run(async (context: HandlerContext) => {
     getReplyChain,
   } = context;
 
-  if (shouldProcessMessage(typeId, content)) {
-    const systemPrompt = generateSystemPrompt();
+  if (await shouldProcessMessage(context)) {
+    console.log("entra");
+    const filePath = path.resolve(__dirname, "../src/nash.md");
+    const nashville = fs.readFileSync(filePath, "utf8");
+    const systemPrompt = generateSystemPrompt() + nashville;
+
     try {
-      const userPrompt = await getUserPrompt(
-        typeId,
-        content,
-        reference,
-        getReplyChain,
-        v2client.address
-      );
+      const userPrompt = content.content ?? content;
 
       if (MSG_LOG === "true") {
         console.log("User Prompt:", userPrompt);
       }
 
       const { reply } = await textGeneration(userPrompt, systemPrompt);
-      console.log("AI Reply:", reply);
+
       context.intent(reply);
     } catch (error) {
       console.error("Error during OpenAI call:", error);
@@ -43,28 +47,24 @@ run(async (context: HandlerContext) => {
   }
 });
 
-function shouldProcessMessage(typeId: string, content: string): boolean {
-  return (typeId === "text" && content.includes("@ai")) || typeId === "reply";
-}
+async function shouldProcessMessage(context: HandlerContext): Promise<boolean> {
+  const {
+    message: {
+      typeId,
+      content: { content, reference },
+    },
+    v2client,
+    getReplyChain,
+  } = context;
 
-async function getUserPrompt(
-  typeId: string,
-  content: string,
-  reference: string,
-  getReplyChain: Function,
-  v2clientAddress: string
-): Promise<string> {
-  if (typeId === "reply") {
-    const { messageChain, receiverFromChain } = await getReplyChain(reference);
-    if (
-      receiverFromChain !== v2clientAddress ||
-      !messageChain.includes("@ai")
-    ) {
-      throw new Error("Not a valid AI reply chain");
-    }
-    return messageChain;
+  if (typeId === "text" && content.includes("@ai")) return true;
+  else if (typeId === "reply") {
+    const { messageChain, receiverFromChain, isReceiverInChain } =
+      await getReplyChain(reference, v2client.address);
+    console.log(messageChain, isReceiverInChain);
+    return isReceiverInChain || messageChain.includes("@ai");
   }
-  return content;
+  return false;
 }
 
 function generateSystemPrompt(): string {
