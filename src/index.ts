@@ -54,16 +54,18 @@ async function shouldProcessMessage(context: HandlerContext): Promise<boolean> {
     },
     v2client,
     group,
-    getMessageById,
     getReplyChain,
   } = context;
+  //@bubbles
 
-  if (typeId === "text" && content.includes("@ai")) return true;
-  else if (typeId === "reply" && group) {
+  if (!group) return true;
+  else if (typeId === "text" && content.includes("@ai")) return true;
+  else if (typeId === "reply") {
     const { chainPrompt, isSenderInChain } = await getReplyChain(
       reference,
       v2client.address
     );
+    console.log("Chain Prompt:", chainPrompt);
     return isSenderInChain || chainPrompt.includes("@ai");
   }
   return false;
