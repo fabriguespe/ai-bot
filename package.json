@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@xmtp/message-kit": "^0.0.22",
+    "node-cron": "^3.0.3",
     "openai": "^4.63.0"
   },
   "devDependencies": {
