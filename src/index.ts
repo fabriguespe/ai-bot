@@ -3,9 +3,12 @@ import { textGeneration } from "./lib/openai.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { startCron, stopCron } from "./lib/cron.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+let clientInitialized = false;
 
 run(async (context: HandlerContext) => {
   const { OPEN_AI_API_KEY, MSG_LOG } = process.env;
@@ -26,7 +29,6 @@ run(async (context: HandlerContext) => {
     const nashville = fs.readFileSync(filePath, "utf8");
     const systemPrompt = generateSystemPrompt() + nashville;
 
-    console.log("System Prompt:", systemPrompt);
     try {
       const userPrompt = content.content ?? content;
 
@@ -57,7 +59,23 @@ async function shouldProcessMessage(context: HandlerContext): Promise<boolean> {
   } = context;
   //@bubbles
 
-  if (!group) return true;
+  if (
+    !group &&
+    !clientInitialized &&
+    context?.message?.content?.content?.includes("gm")
+  ) {
+    startCron(context.client);
+    clientInitialized = true;
+    return true;
+  } else if (
+    !group &&
+    clientInitialized &&
+    context?.message?.content?.content?.includes("stop")
+  ) {
+    stopCron();
+    clientInitialized = true;
+    return true;
+  } else if (!group) return true;
   else if (typeId === "text" && content.includes("@ai")) return true;
   else if (typeId === "reply") {
     const { content: reply } = context.message;
