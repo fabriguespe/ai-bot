@@ -76,7 +76,11 @@ async function shouldProcessMessage(context: HandlerContext): Promise<boolean> {
     clientInitialized = true;
     return true;
   } else if (!group) return true;
-  else if (typeId === "text" && content.includes("@ai")) return true;
+  else if (
+    typeId === "text" &&
+    (content.includes("@ai") || content.includes("@bubbles"))
+  )
+    return true;
   else if (typeId === "reply") {
     const { content: reply } = context.message;
     const { chain } = await getReplyChain(reference, version, v2client.address);
@@ -85,7 +89,7 @@ async function shouldProcessMessage(context: HandlerContext): Promise<boolean> {
       .map((c) => c.content)
       .join("\n")}\nLatest reply: ${reply}`;
 
-    return userPrompt.includes("@ai");
+    return userPrompt.includes("@ai") || userPrompt.includes("@bubbles");
   }
   return false;
 }

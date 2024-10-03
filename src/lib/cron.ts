@@ -11,7 +11,7 @@ export async function startCron(client: Client) {
   if (process.env.NODE_ENV === "production") {
     cronSchedule = "0 8 * * *";
   } else {
-    cronSchedule = "*/1 * * * * *";
+    cronSchedule = "*/5 * * * * *";
   }
   cronTask = cron.schedule(
     cronSchedule,
