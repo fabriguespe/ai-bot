@@ -49,15 +49,14 @@ async function shouldProcessMessage(context: HandlerContext): Promise<boolean> {
       typeId,
       content: { content, reference },
     },
+    group,
     v2client,
     getReplyChain,
     version,
   } = context;
 
-  if (
-    typeId === "text" &&
-    (content.includes("@ai") || content.includes("@bubbles"))
-  )
+  if (typeId === "text" && !group) return true;
+  if (group && (content.includes("@ai") || content.includes("@bubbles")))
     return true;
   else if (typeId === "reply") {
     const { content: reply } = context.message;
