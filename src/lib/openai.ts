@@ -1,6 +1,5 @@
-import dotenv from "dotenv";
-dotenv.config();
 import OpenAI from "openai";
+
 const openai = new OpenAI({
   apiKey: process.env.OPEN_AI_API_KEY,
 });
@@ -21,16 +20,17 @@ export async function textGeneration(userPrompt: string, systemPrompt: string) {
       messages: messages as any,
     });
     const reply = response.choices[0].message.content;
-    const cleanedReply = reply
-      ?.replace(/(\*\*|__)(.*?)\1/g, "$2") // Remove bold
-      ?.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$2") // Keep URL instead of link text
-      ?.replace(/^#+\s*(.*)$/gm, "$1") // Remove titles
-      ?.replace(/`([^`]+)`/g, "$1"); // Remove inline code
-
     messages.push({
       role: "assistant",
-      content: cleanedReply || "No response from OpenAI.",
+      content: reply || "No response from OpenAI.",
     });
+    const cleanedReply = reply
+      ?.replace(/(\*\*|__)(.*?)\1/g, "$2")
+      ?.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$2")
+      ?.replace(/^#+\s*(.*)$/gm, "$1")
+      ?.replace(/`([^`]+)`/g, "$1")
+      ?.replace(/^`|`$/g, "");
+
     return { reply: cleanedReply as string, history: messages };
   } catch (error) {
     console.error("Failed to fetch from OpenAI:", error);
