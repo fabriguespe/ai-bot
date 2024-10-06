@@ -3,7 +3,6 @@ import { textGeneration } from "./lib/openai.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { startCron, stopCron } from "./lib/cron.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -53,30 +52,11 @@ async function shouldProcessMessage(context: HandlerContext): Promise<boolean> {
       content: { content, reference },
     },
     v2client,
-    group,
     getReplyChain,
     version,
   } = context;
-  //@bubbles
 
   if (
-    !group &&
-    !clientInitialized &&
-    context?.message?.content?.content?.includes("gm")
-  ) {
-    startCron(context.client);
-    clientInitialized = true;
-    return true;
-  } else if (
-    !group &&
-    clientInitialized &&
-    context?.message?.content?.content?.includes("stop")
-  ) {
-    stopCron();
-    clientInitialized = true;
-    return true;
-  } else if (!group) return true;
-  else if (
     typeId === "text" &&
     (content.includes("@ai") || content.includes("@bubbles"))
   )
