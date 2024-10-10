@@ -18,8 +18,11 @@ run(async (context: HandlerContext) => {
   const {
     message: {
       content: { content, reference },
+      typeId,
     },
   } = context;
+
+  if (typeId !== "text") return;
 
   if (await shouldProcessMessage(context)) {
     const filePath = path.resolve(__dirname, "../src/nash.md");
