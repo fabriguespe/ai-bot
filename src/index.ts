@@ -42,7 +42,7 @@ run(async (context: HandlerContext) => {
     }
   }
 });
-
+//
 async function shouldProcessMessage(context: HandlerContext): Promise<boolean> {
   const {
     message: {
