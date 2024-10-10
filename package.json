@@ -11,7 +11,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@xmtp/message-kit": "1.0.0-beta.5",
+    "@xmtp/message-kit": "1.0.0-beta.6",
     "node-cron": "^3.0.3",
     "openai": "^4.63.0"
   },
