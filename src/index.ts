@@ -7,44 +7,49 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-run(async (context: HandlerContext) => {
-  const { OPEN_AI_API_KEY, MSG_LOG } = process.env;
+run(
+  async (context: HandlerContext) => {
+    const { OPEN_AI_API_KEY, MSG_LOG } = process.env;
 
-  if (!OPEN_AI_API_KEY) {
-    console.log("No OPEN_AI_API_KEY found in environment variables");
-    return;
-  }
-
-  const {
-    message: {
-      content: { content, reference },
-      typeId,
-    },
-  } = context;
-
-  if (typeId !== "text") return;
-
-  if (await shouldProcessMessage(context)) {
-    const filePath = path.resolve(__dirname, "../src/nash.md");
-    const nashville = fs.readFileSync(filePath, "utf8");
-    const systemPrompt = generateSystemPrompt() + nashville;
-
-    try {
-      const userPrompt = content.content ?? content;
-
-      if (MSG_LOG === "true") {
-        console.log("User Prompt:", userPrompt);
-      }
-
-      const { reply } = await textGeneration(userPrompt, systemPrompt);
-
-      context.intent(reply);
-    } catch (error) {
-      console.error("Error during OpenAI call:", error);
-      await context.reply("An error occurred while processing your request.");
+    if (!OPEN_AI_API_KEY) {
+      console.log("No OPEN_AI_API_KEY found in environment variables");
+      return;
     }
+
+    const {
+      message: {
+        content: { content, reference },
+        typeId,
+      },
+    } = context;
+
+    if (typeId !== "text") return;
+
+    if (await shouldProcessMessage(context)) {
+      const filePath = path.resolve(__dirname, "../src/nash.md");
+      const nashville = fs.readFileSync(filePath, "utf8");
+      const systemPrompt = generateSystemPrompt() + nashville;
+
+      try {
+        const userPrompt = content.content ?? content;
+
+        if (MSG_LOG === "true") {
+          console.log("User Prompt:", userPrompt);
+        }
+
+        const { reply } = await textGeneration(userPrompt, systemPrompt);
+
+        context.intent(reply);
+      } catch (error) {
+        console.error("Error during OpenAI call:", error);
+        await context.reply("An error occurred while processing your request.");
+      }
+    }
+  },
+  {
+    logging: "error",
   }
-});
+);
 //
 async function shouldProcessMessage(context: HandlerContext): Promise<boolean> {
   const {
