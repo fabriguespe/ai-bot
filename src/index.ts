@@ -47,7 +47,9 @@ run(
     }
   },
   {
-    logging: "error",
+    client: {
+      logging: "error",
+    },
   }
 );
 //
